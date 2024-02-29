@@ -1,7 +1,7 @@
 # Archive meta.discourse.org
 
-# Be sure to define the base_url of the Discourse instance, 
-# the path of the directory to save stuff on the local machine, 
+# Be sure to define the base_url of the Discourse instance,
+# the path of the directory to save stuff on the local machine,
 # and a blurb to describe the site.
 
 # Note that the directory specified by `path` will be overwritten.
@@ -24,7 +24,7 @@ from time import sleep
 
 from shutil import rmtree
 
-# When archiving larger sites (like meta.discourse.org), you might need to 
+# When archiving larger sites (like meta.discourse.org), you might need to
 # increase the number of retries to connect.
 # Doesn't seem to be necessary for my site but it *is* necessary for Meta.
 
@@ -47,7 +47,7 @@ main_template = """<!DOCTYPE html>
     <link rel="stylesheet" href="https://use.fontawesome.com/2374bdec1c.css">
     <link rel="stylesheet" href="./archived.css" />
   </head>
-  
+
   <body>
     <header class="header">
       <div class="title-span">
@@ -88,7 +88,7 @@ topic_template = """<!DOCTYPE html>
       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
   </head>
-  
+
   <body>
     <header class="header">
       <div class="title-span">
@@ -163,8 +163,8 @@ def post_row(post_json):
 
     user_name = post_json['username']
     content = post_json['cooked']
-    
-    # Since we don't generate user information, 
+
+    # Since we don't generate user information,
     # replace any anchors of class mention with a span
     soup = bs(content, "html.parser")
     mention_tags = soup.findAll('a', {'class':'mention'})
@@ -205,7 +205,7 @@ def post_row(post_json):
     content = ''
     for s in soup.contents:
         content = content + str(s)
-    
+
     post_string = '      <div class="post_container">\n'
     post_string = post_string + '        <div class="avatar_container">\n'
     post_string = post_string + '          <img src="../../../images/' + \
@@ -237,7 +237,7 @@ def topic_row(topic_json):
         topic_category = category_id_to_name[topic_json['category_id']]
     except KeyError:
         topic_category = ''
-    
+
     topic_html = topic_html + '        <span class="topic">'
     if topic_pinned:
         topic_html = topic_html + '<i class="fa fa-thumb-tack"'
@@ -295,7 +295,7 @@ with open(os.getcwd() + "/images/missing_image.png", "wb") as missing_image_fh:
 
 # Note that there might be errors but the code does attempt to deal with them gracefully by
 # passing over them and continuing.
-# 
+#
 # My archive of DiscoureMeta generated 19 errors - all image downloads that replaced with a missing image PNG.
 
 max_more_topics = 5;
@@ -307,7 +307,7 @@ topic_list_string = ""
 response = requests.get(url)
 topic_list = response.json()['topic_list']['topics']
 for topic in topic_list:
-    try: 
+    try:
         write_topic(topic)
         topic_list_string = topic_list_string + topic_row(topic)
     except Exception as err:
@@ -323,7 +323,7 @@ while 'more_topics_url' in response.json()['topic_list'].keys() and cnt < max_mo
     url = base_topic_url + str(cnt)
     response = requests.get(url)
     topic_list = response.json()['topic_list']['topics']
-    for topic in topic_list[1:]:  ## STARTED AT 1 'CAUSE IT APPEARS THAT 
+    for topic in topic_list[1:]:  ## STARTED AT 1 'CAUSE IT APPEARS THAT
                                   ## LAST THIS = FIRST NEXT   GOTTA CHECK THAT!
         topic_list_string = topic_list_string + topic_row(topic)
         write_topic(topic)
