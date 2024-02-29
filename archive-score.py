@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+# adapted from:
+# https://github.com/mcmcclur/ArchiveDiscourse/blob/master/ArchiveDiscourse.ipynb
+# MIT License
+# https://github.com/mcmcclur/ArchiveDiscourse/blob/master/LICENSE
+
+base_url = 'https://score.community/'
+site_dir = 'score.community'
+max_more_topics = 100;
+
 # Archive meta.discourse.org
 
 # Be sure to define the base_url of the Discourse instance,
@@ -7,28 +17,26 @@
 # Note that the directory specified by `path` will be overwritten.
 
 import os
+import base64
+import sys
 from datetime import date
-base_url = 'https://meta.discourse.org'
-path = os.path.join(os.getcwd(), 'meta_discourse')
-archive_blurb = "A partial archive of meta.discourse.org as of " + \
-    date.today().strftime("%A %B %d, %Y") + '.'
-
-import requests, base64, sys
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup as bs
-from PIL import Image
 from io import BytesIO
-import requests, base64
-from urllib.parse import urlparse
 from time import sleep
-
+from urllib.parse import urlparse
 from shutil import rmtree
+
+import requests
+from requests.adapters import HTTPAdapter
+from PIL import Image
+from bs4 import BeautifulSoup as bs
+
+path = os.path.join(os.getcwd(), site_dir)
+archive_blurb = "A partial archive of " + base_url + " as of " + \
+    date.today().strftime("%A %B %d, %Y") + '.'
 
 # When archiving larger sites (like meta.discourse.org), you might need to
 # increase the number of retries to connect.
 # Doesn't seem to be necessary for my site but it *is* necessary for Meta.
-
-from requests.adapters import HTTPAdapter
 
 s = requests.Session()
 s.mount(base_url, HTTPAdapter(max_retries=5))
@@ -178,7 +186,10 @@ def post_row(post_json):
 
     img_tags = soup.findAll('img')
     for img_tag in img_tags:
-        img_url = img_tag['src']
+        try:
+            img_url = img_tag['src']
+        except KeyError:
+            pass
         parsed_url = urlparse(img_url)
         path = parsed_url.path
         file_name = path.split('/')[-1]
@@ -298,7 +309,6 @@ with open(os.getcwd() + "/images/missing_image.png", "wb") as missing_image_fh:
 #
 # My archive of DiscoureMeta generated 19 errors - all image downloads that replaced with a missing image PNG.
 
-max_more_topics = 5;
 cnt = 0
 topic_path = '/latest.json?no_definitions=true&page='
 base_topic_url = base_url + topic_path
@@ -327,7 +337,6 @@ while 'more_topics_url' in response.json()['topic_list'].keys() and cnt < max_mo
                                   ## LAST THIS = FIRST NEXT   GOTTA CHECK THAT!
         topic_list_string = topic_list_string + topic_row(topic)
         write_topic(topic)
-
 # Wrap things up.
 # Make the replacements and print the main file.
 file_string = main_template \
